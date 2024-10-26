@@ -6,7 +6,7 @@ class CSVToHTMLConverter:
 
     def generate_html_table(self):
         html_output = """
-        <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="table-layout:fixed; border-collapse:collapse; border:none">
+        <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="border-collapse:collapse; border:none; width: 100%;">
             <colgroup>
         """
         
@@ -34,11 +34,11 @@ class CSVToHTMLConverter:
                 
                 # Header row style
                 header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-                header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; background-color: rgb(201, 218, 248); font-family: 'Georgia', serif;"
+                header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; background-color: rgb(201, 218, 248); font-family: 'Georgia', serif; color: black;"
                 
                 # Data row style
                 row_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-                cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
+                cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; color: black;"
 
                 # Generate header row with style
                 html_output += f"<tr style='{header_style}'>" + "".join(
