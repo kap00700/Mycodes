@@ -27,7 +27,7 @@ class CSVToHTMLConverter:
                 cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
 
                 # Generate header row with style
-                headers = next(reader)
+                headers = next(reader)  # Get the header row
                 html_output += f"<tr style='{header_style}'>" + "".join(
                     [f"<td style='{header_cell_style}'>{header}</td>" for header in headers]
                 ) + "</tr>\n"
