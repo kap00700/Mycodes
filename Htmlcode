@@ -12,11 +12,11 @@ class CSVToHTMLConverter:
             
             # Header row style
             header_style = "height: 30px; border: 1px solid rgb(204, 204, 204); background-color: rgb(201, 218, 248);"
-            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; font-family: 'Georgia', serif"
+            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; font-family: 'Georgia', serif; white-space: nowrap;"
             
-            # Data row style with border between rows
-            row_style = "height: 30px; border-top: 1px solid rgb(204, 204, 204);"
-            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
+            # Data row style with uniform border
+            row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
+            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; max-width: 350px; word-wrap: break-word;"
             
             # Generate header row with style and uppercase headers
             headers = next(reader)
