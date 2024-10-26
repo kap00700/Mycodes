@@ -5,7 +5,7 @@ class CSVToHTMLConverter:
         self.csv_file_path = csv_file_path
 
     def generate_html_table(self):
-        html_output = "<html><body><table style='border-collapse: collapse; width: 50%;'>\n"
+        html_output = "<html><body><table style='border-collapse: collapse; width: 50%; border: 1px solid rgb(204, 204, 204);'>\n"
         
         with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
@@ -16,7 +16,7 @@ class CSVToHTMLConverter:
             
             # Data row style with uniform border and text wrapping within 350px
             row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
-            cell_style = "padding: 2px 3px; font-family: 'Verdana', sans-serif; max-width: 350px; word-wrap: break-word; white-space: normal; border: 1px solid rgb(204, 204, 204);"
+            cell_style = "padding: 2px 3px; font-family: 'Verdana', sans-serif; max-width: 350px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; border: 1px solid rgb(204, 204, 204);"
             
             # Generate header row with style and uppercase headers
             headers = next(reader)
@@ -36,6 +36,6 @@ class CSVToHTMLConverter:
         print(f"HTML table generated and saved to '{output_file_path}'.")
 
 # Example usage:
-csv_file_path = "/mnt/data/file-5hlej2JD22c2iyC1zYDpqaWg"  # Update with your CSV file path
+csv_file_path = "/mnt/data/file-ZV9LNouFtXtWV7KgKYbqkJRV"  # Update with your CSV file path
 converter = CSVToHTMLConverter(csv_file_path)
 converter.save_html("/mnt/data/output.html")
