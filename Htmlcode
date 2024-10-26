@@ -6,7 +6,9 @@ class CSVToHTMLConverter:
 
     def generate_html_table(self):
         html_output = """
-        <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="border-collapse:collapse; border:none; width: 100%;">
+        <html>
+        <body>
+        <table cellspacing="0" cellpadding="0" border="1" style="border-collapse:collapse; border:none; width: 100%;">
             <colgroup>
         """
         
@@ -33,22 +35,21 @@ class CSVToHTMLConverter:
                 html_output += "</colgroup>\n<tbody>\n"
                 
                 # Header row style
-                header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-                header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; background-color: rgb(201, 218, 248); font-family: 'Georgia', serif; color: black;"
+                header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204); background-color: rgb(201, 218, 248); font-family: 'Georgia', serif; color: black; text-align: left;"
                 
                 # Data row style
                 row_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-                cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; color: black;"
+                cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; color: black; text-align: left;"
 
                 # Generate header row with style
-                html_output += f"<tr style='{header_style}'>" + "".join(
-                    [f"<td style='{header_cell_style}'>{header}</td>" for header in headers]
+                html_output += f"<tr style='{row_style}'>" + "".join(
+                    [f"<td style='{header_style}'>{header}</td>" for header in headers]
                 ) + "</tr>\n"
                 
                 # Generate data rows with style
                 for row in data_rows:
                     html_output += f"<tr style='{row_style}'>" + "".join(
-                        [f"<td style='{cell_style}'><font face='Verdana, sans-serif'>{cell}</font></td>" for cell in row]
+                        [f"<td style='{cell_style}'>{cell}</td>" for cell in row]
                     ) + "</tr>\n"
         
         except FileNotFoundError:
@@ -59,7 +60,8 @@ class CSVToHTMLConverter:
         html_output += """
             </tbody>
         </table>
-        <br>
+        </body>
+        </html>
         """
         return html_output
 
