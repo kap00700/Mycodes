@@ -5,34 +5,18 @@ class CSVToHTMLConverter:
         self.csv_file_path = csv_file_path
 
     def generate_html_table(self):
-        # Add border styling to the table, rows, and cells
-        html_output = """
-        <html>
-        <body>
-        <table style='border-collapse: collapse; width: 100%; border: 1px solid rgb(204, 204, 204);'>
-        """
+        html_output = "<html><body><table border='1'>\n"
         
         with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             
-            # Header row style
-            header_style = "height: 30px; border: 1px solid rgb(204, 204, 204); background-color: rgb(201, 218, 248);"
-            header_cell_style = "padding: 5px; font-family: 'Georgia', serif; white-space: nowrap; text-align: center;"
-            
-            # Data row style with word wrapping only if content exceeds 350px
-            row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
-            cell_style = """
-            padding: 5px; font-family: 'Verdana', sans-serif; border: 1px solid rgb(204, 204, 204); text-align: center;
-            overflow-wrap: break-word; word-wrap: break-word; white-space: pre-wrap; max-width: 350px;
-            """
-            
-            # Generate header row with style and uppercase headers
+            # Generate header row
             headers = next(reader)
-            html_output += f"<tr style='{header_style}'>" + "".join([f"<th style='{header_cell_style}'>{header.upper()}</th>" for header in headers]) + "</tr>\n"
+            html_output += "<tr>" + "".join([f"<th>{header}</th>" for header in headers]) + "</tr>\n"
             
-            # Generate data rows with style
+            # Generate data rows
             for row in reader:
-                html_output += f"<tr style='{row_style}'>" + "".join([f"<td style='{cell_style}'>{cell}</td>" for cell in row]) + "</tr>\n"
+                html_output += "<tr>" + "".join([f"<td>{cell}</td>" for cell in row]) + "</tr>\n"
         
         html_output += "</table></body></html>"
         return html_output
@@ -44,6 +28,6 @@ class CSVToHTMLConverter:
         print(f"HTML table generated and saved to '{output_file_path}'.")
 
 # Example usage:
-csv_file_path = "/mnt/data/file-7b6NZuALTJSKP39vCM65skmc"  # Update with your CSV file path
+csv_file_path = "your_file.csv"  # Update with your CSV file path
 converter = CSVToHTMLConverter(csv_file_path)
-converter.save_html("/mnt/data/output.html")
+converter.save_html("output.html")
