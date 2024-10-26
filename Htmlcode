@@ -5,18 +5,18 @@ class CSVToHTMLConverter:
         self.csv_file_path = csv_file_path
 
     def generate_html_table(self):
-        html_output = "<html><body><table border='1'>\n"
+        html_output = "<html><body><table style='border-collapse: collapse; width: 50%;'>\n"
         
         with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             
             # Header row style
-            header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; background-color: rgb(201, 218, 248); font-family: 'Georgia', serif"
+            header_style = "height: 30px; border: 1px solid rgb(204, 204, 204); background-color: rgb(201, 218, 248);"
+            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; font-family: 'Georgia', serif"
             
             # Data row style
-            row_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top"
+            row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
+            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
             
             # Generate header row with style
             headers = next(reader)
@@ -24,7 +24,7 @@ class CSVToHTMLConverter:
             
             # Generate data rows with style
             for row in reader:
-                html_output += f"<tr style='{row_style}'>" + "".join([f"<td style='{cell_style}'><font face='verdana, sans-serif'>{cell}</font></td>" for cell in row]) + "</tr>\n"
+                html_output += f"<tr style='{row_style}'>" + "".join([f"<td style='{cell_style}'>{cell}</td>" for cell in row]) + "</tr>\n"
         
         html_output += "</table></body></html>"
         return html_output
@@ -36,6 +36,6 @@ class CSVToHTMLConverter:
         print(f"HTML table generated and saved to '{output_file_path}'.")
 
 # Example usage:
-csv_file_path = "your_file.csv"  # Update with your CSV file path
+csv_file_path = "/mnt/data/file-5hlej2JD22c2iyC1zYDpqaWg"  # Update with your CSV file path
 converter = CSVToHTMLConverter(csv_file_path)
-converter.save_html("output.html")
+converter.save_html("/mnt/data/output.html")
