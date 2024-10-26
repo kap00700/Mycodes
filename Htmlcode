@@ -12,13 +12,13 @@ class CSVToHTMLConverter:
             
             # Header row style
             header_style = "height: 30px; border: 1px solid rgb(204, 204, 204); background-color: rgb(201, 218, 248);"
-            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; font-family: 'Georgia', serif; border-right: 1px solid rgb(204, 204, 204); text-transform: uppercase;"
+            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; font-family: 'Georgia', serif"
             
-            # Data row style
-            row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
-            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; border-right: 1px solid rgb(204, 204, 204);"
+            # Data row style with border between rows
+            row_style = "height: 30px; border-top: 1px solid rgb(204, 204, 204);"
+            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
             
-            # Generate header row with style and uppercase text
+            # Generate header row with style and uppercase headers
             headers = next(reader)
             html_output += f"<tr style='{header_style}'>" + "".join([f"<td style='{header_cell_style}'>{header.upper()}</td>" for header in headers]) + "</tr>\n"
             
