@@ -1,3 +1,4 @@
+
 import csv
 
 class CSVToHTMLConverter:
@@ -5,18 +6,26 @@ class CSVToHTMLConverter:
         self.csv_file_path = csv_file_path
 
     def generate_html_table(self):
-        html_output = "<html><body><table style='border-collapse: collapse; width: 50%; border: 1px solid rgb(204, 204, 204);'>\n"
+        # Set table to fixed layout and specify width constraints for cells
+        html_output = """
+        <html>
+        <body>
+        <table style='border-collapse: collapse; width: 100%; table-layout: fixed; border: 1px solid rgb(204, 204, 204);'>
+        """
         
         with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             
             # Header row style
             header_style = "height: 30px; border: 1px solid rgb(204, 204, 204); background-color: rgb(201, 218, 248);"
-            header_cell_style = "padding: 2px 3px; font-family: 'Georgia', serif; white-space: nowrap; text-align: center;"
+            header_cell_style = "padding: 5px; font-family: 'Georgia', serif; white-space: nowrap; text-align: center;"
             
-            # Data row style with uniform border and text wrapping within 350px
+            # Data row style with enforced word wrapping at 350px
             row_style = "height: 30px; border: 1px solid rgb(204, 204, 204);"
-            cell_style = "padding: 2px 3px; font-family: 'Verdana', sans-serif; max-width: 350px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; border: 1px solid rgb(204, 204, 204);"
+            cell_style = """
+            padding: 5px; font-family: 'Verdana', sans-serif; max-width: 350px; 
+            overflow-wrap: break-word; white-space: normal; border: 1px solid rgb(204, 204, 204); text-align: center;
+            """
             
             # Generate header row with style and uppercase headers
             headers = next(reader)
