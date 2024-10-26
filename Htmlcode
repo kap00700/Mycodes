@@ -6,7 +6,7 @@ class CSVToHTMLConverter:
 
     def generate_html_table(self):
         html_output = """
-        <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="table-layout:fixed; width:0px; border-collapse:collapse; border:none">
+        <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="table-layout:fixed; border-collapse:collapse; border:none">
             <colgroup>
         """
         
@@ -14,12 +14,21 @@ class CSVToHTMLConverter:
             with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
                 reader = csv.reader(csvfile)
                 
-                # Generate headers and determine the number of columns
-                headers = next(reader)  # Get the header row
-                
-                # Create col elements for each column
-                for _ in headers:
-                    html_output += '<col width="300">\n'  # Adjust the width as needed
+                # Get the header row
+                headers = next(reader)
+                column_widths = [len(header) for header in headers]  # Start with header lengths
+
+                # Store data rows to calculate max lengths later
+                data_rows = []
+                for row in reader:
+                    data_rows.append(row)
+                    # Update column widths based on data lengths
+                    for i in range(len(row)):
+                        column_widths[i] = max(column_widths[i], len(row[i]))
+
+                # Create col elements with dynamic widths
+                for width in column_widths:
+                    html_output += f'<col width="{width * 10}">\n'  # Multiply by 10 for pixel width
 
                 html_output += "</colgroup>\n<tbody>\n"
                 
@@ -37,7 +46,7 @@ class CSVToHTMLConverter:
                 ) + "</tr>\n"
                 
                 # Generate data rows with style
-                for row in reader:
+                for row in data_rows:
                     html_output += f"<tr style='{row_style}'>" + "".join(
                         [f"<td style='{cell_style}'><font face='Verdana, sans-serif'>{cell}</font></td>" for cell in row]
                     ) + "</tr>\n"
