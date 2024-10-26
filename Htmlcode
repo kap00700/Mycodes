@@ -1,0 +1,41 @@
+import csv
+
+class CSVToHTMLConverter:
+    def __init__(self, csv_file_path):
+        self.csv_file_path = csv_file_path
+
+    def generate_html_table(self):
+        html_output = "<html><body><table border='1'>\n"
+        
+        with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
+            reader = csv.reader(csvfile)
+            
+            # Header row style
+            header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
+            header_cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: middle; background-color: rgb(201, 218, 248); font-family: 'Georgia', serif"
+            
+            # Data row style
+            row_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
+            cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top"
+            
+            # Generate header row with style
+            headers = next(reader)
+            html_output += f"<tr style='{header_style}'>" + "".join([f"<td style='{header_cell_style}'>{header}</td>" for header in headers]) + "</tr>\n"
+            
+            # Generate data rows with style
+            for row in reader:
+                html_output += f"<tr style='{row_style}'>" + "".join([f"<td style='{cell_style}'><font face='verdana, sans-serif'>{cell}</font></td>" for cell in row]) + "</tr>\n"
+        
+        html_output += "</table></body></html>"
+        return html_output
+
+    def save_html(self, output_file_path="output.html"):
+        html_content = self.generate_html_table()
+        with open(output_file_path, "w", encoding='utf-8') as html_file:
+            html_file.write(html_content)
+        print(f"HTML table generated and saved to '{output_file_path}'.")
+
+# Example usage:
+csv_file_path = "your_file.csv"  # Update with your CSV file path
+converter = CSVToHTMLConverter(csv_file_path)
+converter.save_html("output.html")
