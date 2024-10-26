@@ -8,15 +8,20 @@ class CSVToHTMLConverter:
         html_output = """
         <table cellspacing="0" cellpadding="0" dir="ltr" border="1" style="table-layout:fixed; width:0px; border-collapse:collapse; border:none">
             <colgroup>
-                <col width="300">
-                <col width="400">
-            </colgroup>
-            <tbody>
         """
         
         try:
             with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
                 reader = csv.reader(csvfile)
+                
+                # Generate headers and determine the number of columns
+                headers = next(reader)  # Get the header row
+                
+                # Create col elements for each column
+                for _ in headers:
+                    html_output += '<col width="300">\n'  # Adjust the width as needed
+
+                html_output += "</colgroup>\n<tbody>\n"
                 
                 # Header row style
                 header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
@@ -27,7 +32,6 @@ class CSVToHTMLConverter:
                 cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif;"
 
                 # Generate header row with style
-                headers = next(reader)  # Get the header row
                 html_output += f"<tr style='{header_style}'>" + "".join(
                     [f"<td style='{header_cell_style}'>{header}</td>" for header in headers]
                 ) + "</tr>\n"
