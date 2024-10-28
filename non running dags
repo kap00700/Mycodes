@@ -1,0 +1,64 @@
+class CSVProcessor:
+    def __init__(self, filtered_csv, col_filter, dag_filter, task_filter):
+        self.filtered_csv = filtered_csv
+        self.col_filter = col_filter
+        self.dag_filter = dag_filter
+        self.task_filter = task_filter
+
+    def process_csv(self):
+        # Step 1: Create a set of required columns from col_filter and existing columns in filtered_csv
+        required_columns = set(self.col_filter)
+        for row in self.filtered_csv:
+            required_columns.update(row.keys())
+
+        # Step 2: Process each dag_id in dag_filter
+        for dag in self.dag_filter:
+            filtered_rows = [row for row in self.filtered_csv if row.get("dag_id") == dag]
+
+            # Find tasks for this dag in task_filter
+            tasks_for_dag = next((d[dag] for d in self.task_filter if dag in d), [])
+
+            # Step 3: Process each task in tasks_for_dag
+            for task in tasks_for_dag:
+                row_found = False
+                for row in filtered_rows:
+                    if row.get("task") == task:
+                        # Row exists for this task, keep only filtered columns
+                        row.update({col: row.get(col, "") for col in required_columns})
+                        row_found = True
+
+                if not row_found:
+                    # Add a new row if task not found
+                    new_row = {col: "" for col in required_columns}
+                    new_row.update({"dag_id": dag, "task": task, "state": "Not yet started"})
+                    self.filtered_csv.append(new_row)
+
+            # Step 4: If dag_id has no tasks or rows, add a "Not yet started" row
+            if not filtered_rows:
+                new_row = {col: "" for col in required_columns}
+                new_row.update({"dag_id": dag, "state": "Not yet started"})
+                self.filtered_csv.append(new_row)
+
+    def get_processed_data(self):
+        # Returns the updated filtered_csv list with all modifications
+        return self.filtered_csv
+
+# Example usage:
+filtered_csv = [
+    {'dag_id': 'rdw_cis_sup', 'task': 'abcdfd', 'state': 'In progress'},
+    {'dag_id': 'rdw_cis_sup', 'task': 'sgsgs', 'state': 'Failed'},
+    {'dag_id': 'rdw_cis_sup', 'task': 'aedfd', 'state': 'In progress'},
+    {'dag_id': 'rdw_ingestion_process', 'task': '', 'state': 'In progress'}
+]
+
+col_filter = ['dag_id', 'state']
+dag_filter = ['rdw_cis_sup', 'rdw_ingestion_process', 'rdw_new_dag']
+task_filter = [{'rdw_cis_sup': ['abcdfd', 'sgsgs', 'extra_task']}, {'rdw_ingestion_process': ['task1', 'task2']}]
+
+processor = CSVProcessor(filtered_csv, col_filter, dag_filter, task_filter)
+processor.process_csv()
+updated_filtered_csv = processor.get_processed_data()
+
+# Print the updated filtered_csv
+for row in updated_filtered_csv:
+    print(row)
