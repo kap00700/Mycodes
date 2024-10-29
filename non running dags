@@ -21,20 +21,21 @@ class CSVProcessor:
             # Step 3: Process each task in tasks_for_dag
             for task in tasks_for_dag:
                 row_found = False
+
+                # Check if the task already exists for the current dag_id
                 for row in filtered_rows:
                     if row.get("task") == task:
-                        # Row exists for this task, keep only filtered columns
-                        row.update({col: row.get(col, "") for col in required_columns})
                         row_found = True
+                        break  # Task exists; no need to add a new row
 
                 if not row_found:
-                    # Add a new row if task not found
+                    # Add a new row if the task was not found
                     new_row = {col: "" for col in required_columns}
                     new_row.update({"dag_id": dag, "task": task, "state": "Not yet started"})
                     self.filtered_csv.append(new_row)
 
-            # Step 4: If dag_id has no tasks or rows, add a "Not yet started" row
-            if not filtered_rows:
+            # Step 4: If dag_id has no existing tasks, add a "Not yet started" row
+            if not filtered_rows and not tasks_for_dag:
                 new_row = {col: "" for col in required_columns}
                 new_row.update({"dag_id": dag, "state": "Not yet started"})
                 self.filtered_csv.append(new_row)
