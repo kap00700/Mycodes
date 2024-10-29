@@ -1,0 +1,35 @@
+# Collect all existing dag_ids from filtered_csv (data)
+existing_dags = {dag['dag_id'] for dag in self.filtered_csv}
+
+# Default status for missing DAGs is 'Not yet started'
+if self.col_filter == ['dag_id', 'state']:
+    for dag in self.dag_filter:
+        # Check if dag_id is not in existing_dags
+        if dag not in existing_dags:
+            # Append a new dictionary with 'dag_id' and 'state'
+            self.filtered_csv.append({'dag_id': dag, 'state': 'Not yet started'})
+else:
+    for dag in self.dag_filter:
+        # Check if dag_id is not in filtered_csv
+        if not any(entry['dag_id'] == dag for entry in self.filtered_csv):
+            # Create a new entry with all keys in col_filter initialized to ""
+            # If task is a key, check task_filter for specific values or set to "All jobs"
+            new_entry = {
+                key: ("All jobs" if key == "task" and not self.task_filter else "")
+                for key in self.col_filter
+            }
+            # Update dag_id and state fields
+            new_entry.update({'dag_id': dag, 'state': 'Not yet started'})
+            
+            # If task filter has specific tasks, create separate entries for each task in task_filter
+            if 'task' in self.col_filter and self.task_filter:
+                for task in self.task_filter:
+                    task_entry = new_entry.copy()
+                    task_entry['task'] = task
+                    self.filtered_csv.append(task_entry)
+            else:
+                # Append the new entry with "All jobs" in task if no specific tasks in task_filter
+                self.filtered_csv.append(new_entry)
+
+# Return the updated filtered_csv
+return self.filtered_csv
