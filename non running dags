@@ -6,31 +6,38 @@ class CSVProcessor:
         self.task_filter = task_filter
 
     def process_csv(self):
-        # Step 1: Use only the columns specified in col_filter
+        # Step 1: Create a set of required columns from col_filter and existing columns in filtered_csv
         required_columns = set(self.col_filter)
-
-        # Store original data separately to prevent changes
-        original_data = list(self.filtered_csv)
+        for row in self.filtered_csv:
+            required_columns.update(row.keys())
 
         # Step 2: Process each dag_id in dag_filter
         for dag in self.dag_filter:
-            # Filter rows for the current dag_id
-            filtered_rows = [row for row in original_data if row.get("dag_id") == dag]
-            
-            # Step 3: If dag_id has no rows or rows are incomplete, add a "Not yet started" row
+            filtered_rows = [row for row in self.filtered_csv if row.get("dag_id") == dag]
+
+            # Find tasks for this dag in task_filter
+            tasks_for_dag = next((d[dag] for d in self.task_filter if dag in d), [])
+
+            # Step 3: Process each task in tasks_for_dag
+            for task in tasks_for_dag:
+                row_found = False
+                for row in filtered_rows:
+                    if row.get("task") == task:
+                        # Row exists for this task, keep only filtered columns
+                        row.update({col: row.get(col, "") for col in required_columns})
+                        row_found = True
+
+                if not row_found:
+                    # Add a new row if task not found
+                    new_row = {col: "" for col in required_columns}
+                    new_row.update({"dag_id": dag, "task": task, "state": "Not yet started"})
+                    self.filtered_csv.append(new_row)
+
+            # Step 4: If dag_id has no tasks or rows, add a "Not yet started" row
             if not filtered_rows:
-                # Add a new row if dag_id is missing
                 new_row = {col: "" for col in required_columns}
                 new_row.update({"dag_id": dag, "state": "Not yet started"})
                 self.filtered_csv.append(new_row)
-            else:
-                # Check if any "Not yet started" rows need to be added based on task filtering
-                for row in filtered_rows:
-                    # Add a "Not yet started" entry only if it matches col_filter
-                    new_row = {col: "" for col in required_columns}
-                    new_row.update({"dag_id": dag, "state": "Not yet started"})
-                    if new_row not in self.filtered_csv:
-                        self.filtered_csv.append(new_row)
 
     def get_processed_data(self):
         # Returns the updated filtered_csv list with all modifications
@@ -38,14 +45,14 @@ class CSVProcessor:
 
 # Example usage:
 filtered_csv = [
-    {'dag_id': 'rdw_cis_sup', 'state': 'In progress'},
-    {'dag_id': 'rdw_cis_sup', 'state': 'Failed'},
-    {'dag_id': 'rdw_cis_sup', 'state': 'In progress'},
-    {'dag_id': 'rdw_ingestion_process', 'state': 'In progress'}
+    {'dag_id': 'rdw_cis_sup', 'task': 'abcdfd', 'state': 'In progress'},
+    {'dag_id': 'rdw_cis_sup', 'task': 'sgsgs', 'state': 'Failed'},
+    {'dag_id': 'rdw_cis_sup', 'task': 'aedfd', 'state': 'In progress'},
+    {'dag_id': 'rdw_ingestion_process', 'task': '', 'state': 'In progress'}
 ]
 
 col_filter = ['dag_id', 'state']
-dag_filter = ['rdw_cis_sup', 'rdw_ingestion_process', 'rdw_new_dag', 'rdw_abc_dag']
+dag_filter = ['rdw_cis_sup', 'rdw_ingestion_process', 'rdw_new_dag']
 task_filter = [{'rdw_cis_sup': ['abcdfd', 'sgsgs', 'extra_task']}, {'rdw_ingestion_process': ['task1', 'task2']}]
 
 processor = CSVProcessor(filtered_csv, col_filter, dag_filter, task_filter)
