@@ -1,85 +1,74 @@
-import csv
+from fastapi import FastAPI, Request
+from google.cloud import bigquery
+import vertexai
+from vertexai.language_models import TextGenerationModel
+import json
 
-class CSVToHTMLConverter:
-    def __init__(self, csv_file_path):
-        self.csv_file_path = csv_file_path
+app = FastAPI()
 
-    def generate_html_table(self):
-        html_output = """
-        <html>
-        <body>
-        <table cellspacing="0" cellpadding="0" border="1" style="border-collapse:collapse; border:none; width: 100%;">
-            <colgroup>
-        """
-        
-        try:
-            with open(self.csv_file_path, 'r', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                
-                # Get the header row
-                headers = next(reader)
-                column_widths = [len(header) for header in headers]  # Start with header lengths
+# Initialize clients
+bq_client = bigquery.Client()
+vertexai.init(project="YOUR_GCP_PROJECT", location="us-central1")
+model = TextGenerationModel.from_pretrained("text-bison@002")
 
-                # Store data rows to calculate max lengths later
-                data_rows = []
-                for row in reader:
-                    data_rows.append(row)
-                    # Update column widths based on data lengths
-                    for i in range(len(row)):
-                        column_widths[i] = max(column_widths[i], len(row[i]))
+TABLE_NAME = "`project.dataset.airflow_task_runs`"
 
-                # Create col elements with dynamic widths
-                for width in column_widths:
-                    html_output += f'<col width="{width * 10}">\n'  # Multiply by 10 for pixel width
+SCHEMA_PROMPT = """
+Table: airflow_task_runs
+Columns:
+- dag_id STRING
+- task_id STRING
+- run_date DATE
+- status STRING (RUNNING, SUCCESS, FAILED)
+- start_time TIMESTAMP
+- end_time TIMESTAMP
 
-                html_output += "</colgroup>\n<tbody>\n"
-                
-                # Header row style
-                header_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204); background-color: rgb(201, 218, 248); font-family: 'Georgia', serif; color: black; text-align: left;"
-                
-                # Data row style
-                row_style = "height: 30px; border-width: 1px; border-style: solid; border-color: rgb(204, 204, 204);"
-                cell_style = "overflow: hidden; padding: 2px 3px; vertical-align: top; font-family: 'Verdana', sans-serif; color: black; text-align: left;"
+Rules:
+1. Always generate valid BigQuery SQL.
+2. Never use SELECT * unless user explicitly asks.
+3. Always limit results to 20 unless asked otherwise.
+"""
 
-                # Generate header row with style
-                html_output += f"<tr style='{row_style}'>" + "".join(
-                    [f"<td style='{header_style}'>{header}</td>" for header in headers]
-                ) + "</tr>\n"
-                
-                # Generate data rows with style
-                for row in data_rows:
-                    html_output += f"<tr style='{row_style}'>" + "".join(
-                        [f"<td style='{cell_style}'>{cell}</td>" for cell in row]
-                    ) + "</tr>\n"
-        
-        except FileNotFoundError:
-            return f"Error: The file '{self.csv_file_path}' does not exist."
-        except Exception as e:
-            return f"An error occurred: {str(e)}"
+def generate_sql_from_question(user_question):
+    prompt = f"""
+    {SCHEMA_PROMPT}
 
-        html_output += """
-            </tbody>
-        </table>
-        </body>
-        </html>
-        """
-        return html_output
+    Convert this question into BigQuery SQL:
+    Question: "{user_question}"
+    """
 
-    def save_html(self, output_file_path="output.html"):
-        html_content = self.generate_html_table()
-        
-        if "Error" in html_content:  # Check for errors in HTML generation
-            print(html_content)
-            return
-        
-        try:
-            with open(output_file_path, "w", encoding='utf-8') as html_file:
-                html_file.write(html_content)
-            print(f"HTML table generated and saved to '{output_file_path}'.")
-        except Exception as e:
-            print(f"Error saving HTML file: {str(e)}")
+    response = model.predict(prompt, max_output_tokens=512)
+    return response.text.strip()
 
-# Example usage:
-csv_file_path = "/mnt/data/file-5hlej2JD22c2iyC1zYDpqaWg"  # Update with your CSV file path
-converter = CSVToHTMLConverter(csv_file_path)
-converter.save_html("/mnt/data/output.html")  # Specify the output path as needed
+def run_bigquery(sql):
+    df = bq_client.query(sql).to_dataframe()
+    return df.to_dict(orient="records")
+
+def summarize_result(user_question, data):
+    prompt = f"""
+    User asked: "{user_question}"
+
+    BigQuery returned:
+    {json.dumps(data, indent=2)}
+
+    Summarize this result in simple human language.
+    """
+
+    response = model.predict(prompt, max_output_tokens=256)
+    return response.text.strip()
+
+@app.post("/chat")
+async def chat(request: Request):
+    body = await request.json()
+    user_text = body["message"]["text"]
+
+    # Step 1: Convert question → SQL
+    sql = generate_sql_from_question(user_text)
+
+    # Step 2: Run SQL in BigQuery
+    results = run_bigquery(sql)
+
+    # Step 3: Summarize in English
+    answer = summarize_result(user_text, results)
+
+    return {"text": answer}
